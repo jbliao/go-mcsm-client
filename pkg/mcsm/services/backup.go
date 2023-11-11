@@ -2,20 +2,17 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"github.com/jbliao/go-mcsm-client/pkg/mcsm"
 )
 
-func BackupServerWorlds(ctx context.Context, mcsmClient *mcsm.Client) (err error) {
+// BackupServerWorlds issue zip command on a mcsm instance, then download it and write using writer.
+func BackupServerWorlds(ctx context.Context, mcsmClient *mcsm.Client, fileNameOnServer string, writer io.Writer) (err error) {
 
-	y, m, d := time.Now().Date()
-	fileName := fmt.Sprintf("worlds_%2d%2d%2d.zip", y, m, d)
 	dirName := "backups"
-	zipName := dirName + "/" + fileName
+	zipName := dirName + "/" + fileNameOnServer
 
 	err = mcsmClient.SendCommand(ctx, "save-off")
 	if err != nil {
@@ -48,7 +45,6 @@ func BackupServerWorlds(ctx context.Context, mcsmClient *mcsm.Client) (err error
 		return
 	}
 
-	f, _ := os.Create(fileName)
-	io.Copy(f, reader)
+	io.Copy(writer, reader)
 	return
 }
