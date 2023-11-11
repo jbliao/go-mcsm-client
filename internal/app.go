@@ -51,7 +51,7 @@ func NewApp() *App {
 					Usage: "Instance specific commands",
 					Subcommands: []*cli.Command{
 						commands.NewBackupCommand(),
-						commands.NewLiseFileCommand(),
+						commands.NewListFileCommand(),
 						commands.NewExecuteCommand(),
 					},
 				},

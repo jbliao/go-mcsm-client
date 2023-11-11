@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func NewLiseFileCommand() *cli.Command {
+func NewListFileCommand() *cli.Command {
 	return &cli.Command{
 		Name: "listfile",
 		Flags: []cli.Flag{
