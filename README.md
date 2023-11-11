@@ -1,4 +1,6 @@
 # go-mcsm-client
+A cli tool for [MCSManager](https://github.com/MCSManager/MCSManager)
+
 ## Build
 ```
 git clone https://github.com/jbliao/go-mcsm-client.git
