@@ -41,4 +41,12 @@ F       pluginState.json                 245
 $ mcsm instance backup
 $ ls worlds*.zip
 worlds_20231111.zip
+
+$ mcsm instance backup -f worlds.zip
+$ ls worlds.zip
+worlds.zip
+
+$ mcsm instance backup -f - > /tmp/worlds.zip
+$ ls /tmp/worlds.zip
+worlds.zip
 ```
