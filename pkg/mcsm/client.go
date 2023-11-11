@@ -2,6 +2,7 @@ package mcsm
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -44,7 +45,7 @@ func NewClient(urlStr, apiKey, serviceUuid, instanceUuid string) (*Client, error
 	}, nil
 }
 
-func (c *Client) prepareRequest(method, path string, queries *Queries, body io.Reader) (req *http.Request, err error) {
+func (c *Client) prepareRequest(ctx context.Context, method, path string, queries *Queries, body io.Reader) (req *http.Request, err error) {
 	tempUrl := *c.Url
 
 	q := tempUrl.Query()
@@ -57,7 +58,7 @@ func (c *Client) prepareRequest(method, path string, queries *Queries, body io.R
 	tempUrl.RawQuery = q.Encode()
 	tempUrl.Path = path
 
-	req, err = http.NewRequest(method, tempUrl.String(), body)
+	req, err = http.NewRequestWithContext(ctx, method, tempUrl.String(), body)
 	if err != nil {
 		return
 	}
@@ -69,7 +70,7 @@ func (c *Client) prepareRequest(method, path string, queries *Queries, body io.R
 	return
 }
 
-func (c *Client) call(method, path string, queries *Queries, content *RequestBody) (out json.RawMessage, err error) {
+func (c *Client) call(ctx context.Context, method, path string, queries *Queries, content *RequestBody) (out json.RawMessage, err error) {
 
 	var reader io.Reader = http.NoBody
 	if content != nil {
@@ -82,7 +83,7 @@ func (c *Client) call(method, path string, queries *Queries, content *RequestBod
 		reader = bytes.NewReader(jsonBytes)
 	}
 
-	req, err := c.prepareRequest(method, path, queries, reader)
+	req, err := c.prepareRequest(ctx, method, path, queries, reader)
 	if err != nil {
 		return
 	}
@@ -123,8 +124,8 @@ type FileListData struct {
 	Items []FileListItem
 }
 
-func (c *Client) ListFile(path, fileName string) (out *FileListData, err error) {
-	resp, err := c.call("GET", "/api/files/list", &Queries{
+func (c *Client) ListFile(ctx context.Context, path, fileName string) (out *FileListData, err error) {
+	resp, err := c.call(ctx, "GET", "/api/files/list", &Queries{
 		"remote_uuid": c.SvcUuid,
 		"uuid":        c.InstUuid,
 		"target":      path,
@@ -142,8 +143,8 @@ func (c *Client) ListFile(path, fileName string) (out *FileListData, err error) 
 	return
 }
 
-func (c *Client) ZipFiles(zipName string, targetFiles ...string) (err error) {
-	_, err = c.call("POST", "/api/files/compress",
+func (c *Client) ZipFiles(ctx context.Context, zipName string, targetFiles ...string) (err error) {
+	_, err = c.call(ctx, "POST", "/api/files/compress",
 		&Queries{
 			"remote_uuid": c.SvcUuid,
 			"uuid":        c.InstUuid,
@@ -164,8 +165,8 @@ type FileStatus struct {
 	IsGlobalInstance bool
 }
 
-func (c *Client) FileStatus() (status *FileStatus, err error) {
-	result, err := c.call("GET", "/api/files/status",
+func (c *Client) FileStatus(ctx context.Context) (status *FileStatus, err error) {
+	result, err := c.call(ctx, "GET", "/api/files/status",
 		&Queries{
 			"remote_uuid": c.SvcUuid,
 			"uuid":        c.InstUuid,
@@ -184,8 +185,8 @@ type FileDownloadData struct {
 	Addr     string
 }
 
-func (c *Client) DownloadFile(fileName string) (reader io.Reader, err error) {
-	resp, err := c.call("GET", "/api/files/download",
+func (c *Client) DownloadFile(ctx context.Context, fileName string) (reader io.Reader, err error) {
+	resp, err := c.call(ctx, "GET", "/api/files/download",
 		&Queries{
 			"remote_uuid": c.SvcUuid,
 			"uuid":        c.InstUuid,
@@ -211,8 +212,8 @@ func (c *Client) DownloadFile(fileName string) (reader io.Reader, err error) {
 	return fileResp.Body, err
 }
 
-func (c *Client) SendCommand(command string) (err error) {
-	_, err = c.call("GET", "/api/protected_instance/command",
+func (c *Client) SendCommand(ctx context.Context, command string) (err error) {
+	_, err = c.call(ctx, "GET", "/api/protected_instance/command",
 		&Queries{
 			"remote_uuid": c.SvcUuid,
 			"uuid":        c.InstUuid,
